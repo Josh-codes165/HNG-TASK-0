@@ -1,0 +1,250 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap');
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background-color: #f5f5f5;
+  display: flex;
+  justify-content: center;
+  padding: 2rem 1rem;
+}
+
+/* ── Card ── */
+.card {
+  background: white;
+  border: 0.5px solid #e0e0e0;
+  border-radius: 16px;
+  padding: 24px;
+  width: 100%;
+  max-width: 460px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Red-to-amber accent bar at the top */
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #E24B4A, #EF9F27);
+  border-radius: 16px 16px 0 0;
+}
+
+/* ── Card Header ── */
+.card-header {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  margin-bottom: 18px;
+}
+
+/* ── Custom Checkbox ── */
+.checkbox-wrap {
+  position: relative;
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+
+.checkbox-wrap input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 1.5px solid #ccc;
+  border-radius: 6px;
+  cursor: pointer;
+  background: white;
+  transition: all 0.18s ease;
+  display: block;
+}
+
+.checkbox-wrap input[type="checkbox"]:hover {
+  border-color: #E24B4A;
+}
+
+.checkbox-wrap input[type="checkbox"]:checked {
+  background: #E24B4A;
+  border-color: #E24B4A;
+}
+
+.checkbox-wrap input[type="checkbox"]:checked::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 7px;
+  width: 5px;
+  height: 9px;
+  border: 2px solid white;
+  border-top: none;
+  border-left: none;
+  transform: rotate(45deg);
+}
+
+/* ── Title & Description ── */
+.card-title-group h2 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 5px;
+  line-height: 1.4;
+  transition: color 0.2s;
+}
+
+/* Strikethrough when task is done */
+.card.done .card-title-group h2 {
+  text-decoration: line-through;
+  color: #aaa;
+}
+
+.card-title-group p {
+  font-size: 13px;
+  color: #666;
+  line-height: 1.6;
+}
+
+/* ── Badges ── */
+.meta-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+  align-items: center;
+}
+
+.badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 999px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.badge-high {
+  background: #FCEBEB;
+  color: #A32D2D;
+  border: 0.5px solid #F7C1C1;
+}
+
+.badge-status {
+  background: #E6F1FB;
+  color: #185FA5;
+  border: 0.5px solid #B5D4F4;
+}
+
+/* ── Divider ── */
+.divider {
+  height: 0.5px;
+  background: #e0e0e0;
+  margin: 14px 0;
+}
+
+/* ── Date Row ── */
+.date-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.due-date {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #666;
+}
+
+.due-date svg {
+  opacity: 0.6;
+}
+
+.time-remaining {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 3px 9px;
+  border-radius: 6px;
+  background: #FAEEDA;
+  color: #633806;
+  border: 0.5px solid #FAC775;
+  letter-spacing: 0.01em;
+}
+
+/* ── Tags ── */
+.tags-list {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 14px 0 0;
+}
+
+.tags-list li {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #f0f0f0;
+  color: #555;
+  border: 0.5px solid #e0e0e0;
+}
+
+/* ── Action Buttons ── */
+.action-row {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 0.5px solid #e0e0e0;
+}
+
+.btn {
+  padding: 7px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: 'DM Sans', sans-serif;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: 0.5px solid #ccc;
+  background: white;
+  color: #1a1a1a;
+}
+
+.btn:hover {
+  background: #f5f5f5;
+  transform: translateY(-1px);
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn-edit {
+  color: #185FA5;
+  border-color: #B5D4F4;
+  background: #E6F1FB;
+}
+
+.btn-edit:hover {
+  background: #B5D4F4;
+}
+
+.btn-delete {
+  color: #A32D2D;
+  border-color: #F7C1C1;
+  background: #FCEBEB;
+}
+
+.btn-delete:hover {
+  background: #F7C1C1;
+}
