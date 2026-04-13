@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap");
 
 * {
   box-sizing: border-box;
@@ -7,7 +7,7 @@
 }
 
 body {
-  font-family: 'DM Sans', sans-serif;
+  font-family: "DM Sans", sans-serif;
   background-color: #f5f5f5;
   display: flex;
   flex-direction: column;
@@ -33,13 +33,23 @@ h3 {
   overflow: hidden;
 }
 
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
 /* Red-to-amber accent bar at the top */
 .card::before {
-  content: '';
+  content: "";
   position: absolute;
-  top: 0; left: 0; right: 0;
+  top: 0;
+  left: 0;
+  right: 0;
   height: 3px;
-  background: linear-gradient(90deg, #E24B4A, #EF9F27);
+  background: linear-gradient(90deg, #e24b4a, #ef9f27);
   border-radius: 16px 16px 0 0;
 }
 
@@ -72,16 +82,16 @@ h3 {
 }
 
 .checkbox-wrap input[type="checkbox"]:hover {
-  border-color: #E24B4A;
+  border-color: #e24b4a;
 }
 
 .checkbox-wrap input[type="checkbox"]:checked {
-  background: #E24B4A;
-  border-color: #E24B4A;
+  background: #e24b4a;
+  border-color: #e24b4a;
 }
 
 .checkbox-wrap input[type="checkbox"]:checked::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 4px;
   left: 7px;
@@ -134,15 +144,15 @@ h3 {
 }
 
 .badge-high {
-  background: #FCEBEB;
-  color: #A32D2D;
-  border: 0.5px solid #F7C1C1;
+  background: #fcebeb;
+  color: #a32d2d;
+  border: 0.5px solid #f7c1c1;
 }
 
 .badge-status {
-  background: #E6F1FB;
-  color: #185FA5;
-  border: 0.5px solid #B5D4F4;
+  background: #e6f1fb;
+  color: #185fa5;
+  border: 0.5px solid #b5d4f4;
 }
 
 /* ── Divider ── */
@@ -174,14 +184,14 @@ h3 {
 }
 
 .time-remaining {
-  font-family: 'DM Mono', monospace;
+  font-family: "DM Mono", monospace;
   font-size: 11px;
   font-weight: 500;
   padding: 3px 9px;
   border-radius: 6px;
-  background: #FAEEDA;
+  background: #faeeda;
   color: #633806;
-  border: 0.5px solid #FAC775;
+  border: 0.5px solid #fac775;
   letter-spacing: 0.01em;
 }
 
@@ -218,7 +228,7 @@ h3 {
   padding: 7px 16px;
   font-size: 13px;
   font-weight: 500;
-  font-family: 'DM Sans', sans-serif;
+  font-family: "DM Sans", sans-serif;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -237,21 +247,21 @@ h3 {
 }
 
 .btn-edit {
-  color: #185FA5;
-  border-color: #B5D4F4;
-  background: #E6F1FB;
+  color: #185fa5;
+  border-color: #b5d4f4;
+  background: #e6f1fb;
 }
 
 .btn-edit:hover {
-  background: #B5D4F4;
+  background: #b5d4f4;
 }
 
 .btn-delete {
-  color: #A32D2D;
-  border-color: #F7C1C1;
-  background: #FCEBEB;
+  color: #a32d2d;
+  border-color: #f7c1c1;
+  background: #fcebeb;
 }
 
 .btn-delete:hover {
-  background: #F7C1C1;
+  background: #f7c1c1;
 }
