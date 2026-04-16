@@ -1,62 +1,285 @@
-function getTimeRemaining() {
-  const dueDate = new Date("2026-04-20T18:00:00");
-  const now = new Date();
-  const diff = dueDate - now;
+const card = document.querySelector('[data-testid="test-todo-card"]');
+const checkbox = document.getElementById("complete-toggle");
+const taskTitle = document.getElementById("task-title");
+const taskDesc = document.getElementById("task-description");
+const statusBadge = document.getElementById("status-badge");
+const statusControl = document.getElementById("status-control");
+const priorityBadge = document.getElementById("priority-badge");
+const priorityDot = document.getElementById("priority-indicator");
+const timeEl = document.getElementById("time-remaining");
+const overdueEl = document.getElementById("overdue-indicator");
+const editBtn = document.querySelector('[data-testid="test-todo-edit-button"]');
+const deleteBtn = document.querySelector(
+  '[data-testid="test-todo-delete-button"]',
+);
+const editForm = document.getElementById("edit-form");
+const saveBtn = document.querySelector('[data-testid="test-todo-save-button"]');
+const cancelBtn = document.querySelector(
+  '[data-testid="test-todo-cancel-button"]',
+);
+const collapsible = document.getElementById("collapsible-section");
+const expandToggle = document.getElementById("expand-toggle");
 
-  const minutes = Math.floor(Math.abs(diff) / 1000 / 60);
-  const hours = Math.floor(minutes / 60);
-  const days = Math.floor(hours / 24);
+// ─────────────────────────────────────────
+// 2. STATE VARIABLES
+// These are the card's "memory"
+// ─────────────────────────────────────────
+
+let currentStatus = "In Progress";
+let currentPriority = "High";
+let isExpanded = false;
+let dueDate = new Date("2026-04-20T18:00:00");
+let timerInterval = null; // holds our setInterval so we can stop it later
+
+// ─────────────────────────────────────────
+// 3. STATUS FUNCTION
+// One function that updates EVERYTHING related to status
+// ─────────────────────────────────────────
+
+function applyStatus(newStatus) {
+  currentStatus = newStatus; // update our memory
+
+  statusControl.value = newStatus;
+
+  checkbox.checked = newStatus === "Done";
+
+  statusBadge.textContent = newStatus;
+
+  if (newStatus === "Done") {
+    statusBadge.style.background = "#eaf3de";
+    statusBadge.style.color = "#3b6d11";
+    statusBadge.style.borderColor = "#c0dd97";
+    taskTitle.style.textDecoration = "line-through";
+    taskTitle.style.color = "#aaa";
+    stopTimer(); // stop the countdown when done
+  } else if (newStatus === "In Progress") {
+    statusBadge.style.background = "#e6f1fb";
+    statusBadge.style.color = "#185fa5";
+    statusBadge.style.borderColor = "#b5d4f4";
+    taskTitle.style.textDecoration = "none";
+    taskTitle.style.color = "#1a1a1a";
+    startTimer(); // make sure timer is running
+  } else {
+    // Pending
+    statusBadge.style.background = "#faeeda";
+    statusBadge.style.color = "#633806";
+    statusBadge.style.borderColor = "#fac775";
+    taskTitle.style.textDecoration = "none";
+    taskTitle.style.color = "#1a1a1a";
+    startTimer();
+  }
+}
+
+// ─────────────────────────────────────────
+// 4. PRIORITY FUNCTION
+// Updates the badge text and the colored dot
+// ─────────────────────────────────────────
+function applyPriority(newPriority) {
+  currentPriority = newPriority;
+
+  // Update text
+  priorityBadge.textContent = newPriority;
+
+  // Update aria label
+  priorityBadge.setAttribute("aria-label", "Priority: " + newPriority);
+
+  // Update DOT
+  priorityDot.classList.remove(
+    "priority-low",
+    "priority-medium",
+    "priority-high",
+  );
+  priorityDot.classList.add("priority-" + newPriority.toLowerCase());
+
+  // 🔥 Update BADGE color
+  priorityBadge.classList.remove("badge-low", "badge-medium", "badge-high");
+  priorityBadge.classList.add("badge-" + newPriority.toLowerCase());
+}
+
+// ─────────────────────────────────────────
+// 5. TIME / OVERDUE FUNCTIONS
+// ─────────────────────────────────────────
+
+function getTimeRemaining() {
+  // If the task is done, stop showing a countdown
+  if (currentStatus === "Done") {
+    return "Completed";
+  }
+
+  const now = new Date();
+  const diff = dueDate - now; // milliseconds between now and due date
+
+  const totalMinutes = Math.floor(Math.abs(diff) / 1000 / 60);
+  const totalHours = Math.floor(totalMinutes / 60);
+  const totalDays = Math.floor(totalHours / 24);
+  const remMinutes = totalMinutes % 60; // leftover minutes after extracting hours
 
   if (diff < 0) {
-    if (hours < 1) return "Overdue by " + minutes + " minutes";
-    if (days < 1) return "Overdue by " + hours + " hours";
-    return "Overdue by " + days + " days";
+    // OVERDUE — show the overdue indicator
+    overdueEl.classList.remove("hidden");
+
+    if (totalMinutes < 60) return "Overdue by " + totalMinutes + " min";
+    if (totalHours < 24)
+      return "Overdue by " + totalHours + "h " + remMinutes + "m";
+    return "Overdue by " + totalDays + " days";
   } else {
-    if (days === 1) return "Due tomorrow";
-    if (days > 1) return "Due in " + days + " days";
-    if (hours > 0) return "Due in " + hours + " hours";
+    // NOT overdue — hide the overdue indicator
+    overdueEl.classList.add("hidden");
+
+    if (totalDays >= 2) return "Due in " + totalDays + " days";
+    if (totalDays === 1) return "Due tomorrow";
+    if (totalHours >= 1)
+      return "Due in " + totalHours + "h " + remMinutes + "m";
+    if (totalMinutes > 0) return "Due in " + totalMinutes + " min";
     return "Due now";
   }
 }
 
-const timeEl = document.getElementById("time-remaining");
-timeEl.textContent = getTimeRemaining();
-setInterval(() => {
+function updateTime() {
   timeEl.textContent = getTimeRemaining();
-}, 60000);
+}
 
-// ── Checkbox ──
-const checkbox = document.getElementById("complete-toggle");
-const title = document.getElementById("task-title");
-const status = document.getElementById("status-badge");
+function startTimer() {
+  // Only start if not already running
+  if (timerInterval) return;
+  updateTime(); // run immediately
+  timerInterval = setInterval(updateTime, 30000); // then every 30 seconds
+}
 
-checkbox.addEventListener("change", () => {
-  const title = document.getElementById("task-title");
-  const status = document.getElementById("status-badge");
-  if (checkbox.checked) {
-    title.style.textDecoration = "line-through";
-    title.style.color = "#999";
-    status.textContent = "Done";
-    status.style.background = "#eaf3de";
-    status.style.color = "#3b6d11";
+function stopTimer() {
+  clearInterval(timerInterval); // cancel the interval
+  timerInterval = null; // reset to null so startTimer works again later
+  timeEl.textContent = "Completed";
+}
+
+// ─────────────────────────────────────────
+// 6. EDIT MODE
+// ─────────────────────────────────────────
+
+function openEditMode() {
+  // Pre-fill form inputs with current card values
+  document.getElementById("edit-title-input").value =
+    taskTitle.textContent.trim();
+  document.getElementById("edit-desc-input").value =
+    taskDesc.textContent.trim();
+  document.getElementById("edit-priority-select").value = currentPriority;
+  document.getElementById("edit-due-date-input").value = dueDate
+    .toISOString()
+    .slice(0, 16);
+
+  editForm.classList.remove("hidden");
+
+  // Change Edit button label so user knows they're in edit mode
+  editBtn.textContent = "Editing...";
+  editBtn.disabled = true; // prevent double-clicking into edit mode
+
+  document.getElementById("edit-title-input").focus();
+}
+
+function closeEditMode() {
+  editForm.classList.add("hidden");
+  editBtn.textContent = "Edit";
+  editBtn.disabled = false;
+  editBtn.focus();
+}
+
+function saveEdit() {
+  const newTitle = document.getElementById("edit-title-input").value.trim();
+  const newDesc = document.getElementById("edit-desc-input").value.trim();
+  const newPriority = document.getElementById("edit-priority-select").value;
+  const newDueInput = document.getElementById("edit-due-date-input").value;
+
+  // Update the display
+  taskTitle.textContent = newTitle || "Untitled Task"; // fallback if blank
+  taskDesc.textContent = newDesc;
+
+  // Update due date (convert the input string back to a Date object)
+  if (newDueInput) {
+    dueDate = new Date(newDueInput);
+    updateTime(); 
+  }
+
+  applyPriority(newPriority); // update dot + badge
+
+  checkExpandNeeded();
+
+  closeEditMode();
+}
+
+// ─────────────────────────────────────────
+// 7. EXPAND / COLLAPSE
+// ─────────────────────────────────────────
+
+function checkExpandNeeded() {
+  
+  const needsToggle = collapsible.scrollHeight > 60;
+
+  if (needsToggle) {
+    expandToggle.classList.remove("hidden"); // show the toggle button
   } else {
-    title.style.textDecoration = "none";
-    title.style.color = "#1a1a1a";
-    status.textContent = "In Progress";
-    status.style.background = "#E6F1FB";
-    status.style.color = "#185FA5";
+    expandToggle.classList.add("hidden"); // hide it if not needed
+    collapsible.classList.remove("collapsed");
+    collapsible.classList.add("expanded"); // always show full content
+  }
+}
+
+function toggleExpand() {
+  isExpanded = !isExpanded; 
+
+  if (isExpanded) {
+    collapsible.classList.remove("collapsed");
+    collapsible.classList.add("expanded");
+    expandToggle.textContent = "Show less";
+    expandToggle.setAttribute("aria-expanded", "true");
+  } else {
+    collapsible.classList.remove("expanded");
+    collapsible.classList.add("collapsed");
+    expandToggle.textContent = "Show more";
+    expandToggle.setAttribute("aria-expanded", "false");
+  }
+}
+
+// ─────────────────────────────────────────
+// 8. EVENT LISTENERS
+// Wire everything together
+// ─────────────────────────────────────────
+
+// Checkbox → status sync
+checkbox.addEventListener("change", () => {
+  if (checkbox.checked) {
+    applyStatus("Done");
+  } else {
+    applyStatus("Pending"); // acceptable based on spec
   }
 });
 
-// ── Delete Button ──
-const deleteBtn = document.querySelector(
-  '[data-testid="test-todo-delete-button"]',
-);
-const card = document.querySelector('[data-testid="test-todo-card"]');
+// Status dropdown → status sync
+statusControl.addEventListener("change", () => {
+  applyStatus(statusControl.value);
+  // Just pass the selected value into our applyStatus function
+});
 
+// Edit button
+editBtn.addEventListener("click", openEditMode);
+
+// Save button
+saveBtn.addEventListener("click", (e) => {
+  e.preventDefault(); // 🔥 prevents reload
+  saveEdit();
+});
+
+// Cancel button
+cancelBtn.addEventListener("click", (e) => {
+  e.preventDefault();
+  closeEditMode();
+});
+
+// Expand toggle
+expandToggle.addEventListener("click", toggleExpand);
+
+// Delete button (kept from Stage 0)
 deleteBtn.addEventListener("click", () => {
-  const confirmed = confirm("Delete this task?");
-  if (confirmed) {
+  if (confirm("Delete this task?")) {
     card.style.transition = "opacity 0.3s ease, transform 0.3s ease";
     card.style.opacity = "0";
     card.style.transform = "scale(0.97)";
@@ -64,85 +287,11 @@ deleteBtn.addEventListener("click", () => {
   }
 });
 
-// ── Edit Button ──
-const editBtn = document.querySelector('[data-testid="test-todo-edit-button"]');
-const description = document.querySelector(
-  '[data-testid="test-todo-description"]',
-);
+// ─────────────────────────────────────────
+// 9. INITIALIZE — run this when page loads
+// ─────────────────────────────────────────
 
-editBtn.addEventListener("click", () => {
-  const isEditing = editBtn.textContent === "Save";
-
-  const title = document.getElementById("task-title");
-  const description = document.querySelector(
-    '[data-testid="test-todo-description"]',
-  );
-
-  if (!isEditing) {
-    // Switch title to input
-    const titleInput = document.createElement("input");
-    titleInput.type = "text";
-    titleInput.value = title.textContent.trim();
-    titleInput.id = "edit-title-input";
-    titleInput.style.cssText = `
-      font-size: 16px;
-      font-weight: 600;
-      font-family: inherit;
-      border: 1.5px solid #B5D4F4;
-      border-radius: 6px;
-      padding: 4px 8px;
-      width: 100%;
-      outline: none;
-      color: #1a1a1a;
-      margin-bottom: 6px;
-    `;
-    title.replaceWith(titleInput);
-    titleInput.focus();
-
-    // Switch description to textarea
-    const descTextarea = document.createElement("textarea");
-    descTextarea.value = description.textContent.trim();
-    descTextarea.id = "edit-desc-textarea";
-    descTextarea.rows = 2;
-    descTextarea.style.cssText = `
-      font-size: 13px;
-      font-family: inherit;
-      border: 1.5px solid #B5D4F4;
-      border-radius: 6px;
-      padding: 4px 8px;
-      width: 100%;
-      outline: none;
-      color: #666;
-      resize: none;
-      line-height: 1.6;
-    `;
-    description.replaceWith(descTextarea);
-
-    editBtn.textContent = "Save";
-    editBtn.style.background = "#eaf3de";
-    editBtn.style.color = "#3b6d11";
-    editBtn.style.borderColor = "#C0DD97";
-  } else {
-    // Read values back
-    const titleInput = document.getElementById("edit-title-input");
-    const descTextarea = document.getElementById("edit-desc-textarea");
-
-    // Restore title h2
-    const newTitle = document.createElement("h2");
-    newTitle.id = "task-title";
-    newTitle.setAttribute("data-testid", "test-todo-title");
-    newTitle.textContent = titleInput.value.trim() || "Untitled Task";
-    titleInput.replaceWith(newTitle);
-
-    // Restore description p
-    const newDesc = document.createElement("p");
-    newDesc.setAttribute("data-testid", "test-todo-description");
-    newDesc.textContent = descTextarea.value.trim();
-    descTextarea.replaceWith(newDesc);
-
-    editBtn.textContent = "Edit";
-    editBtn.style.background = "#E6F1FB";
-    editBtn.style.color = "#185FA5";
-    editBtn.style.borderColor = "#B5D4F4";
-  }
-});
+applyStatus(currentStatus); // set initial status
+applyPriority(currentPriority); // set initial priority dot
+startTimer(); // start the countdown
+checkExpandNeeded(); // check if description needs a toggle
